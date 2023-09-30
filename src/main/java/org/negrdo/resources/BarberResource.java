@@ -6,6 +6,7 @@ import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import org.negrdo.entities.Appointment;
 import org.negrdo.entities.Barber;
 import org.negrdo.entities.Customer;
 import org.negrdo.repositories.BarberRepository;
@@ -23,8 +24,7 @@ public class BarberResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public List<Barber> index() {
-        List<Barber> barbers = barberRepository.listAll(Sort.by("createdAt").ascending());
-        return barbers;
+        return barberRepository.listAll(Sort.by("createdAt").ascending());
     }
 
     @POST
@@ -42,8 +42,16 @@ public class BarberResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Barber get(@PathParam("id") UUID id) {
+        return barberRepository.findById(id);
+    }
+
+    @GET
+    @Path("/{id}/appointments")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<Appointment> getCustomers(@PathParam("id") UUID id) {
         Barber barber = barberRepository.findById(id);
-        return barber;
+        return barber.getAppointments().stream().toList();
     }
 
     @PUT

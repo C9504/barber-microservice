@@ -5,6 +5,7 @@ import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import jakarta.persistence.*;
 
 import java.time.Instant;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
@@ -35,15 +36,13 @@ public class Barber extends PanacheEntityBase {
     @Column(name = "updated_at", nullable = false)
     private Long updatedAt = Instant.now().toEpochMilli();
 
-    @OneToMany(targetEntity = Appointment.class, mappedBy = "barber", fetch = FetchType.EAGER, cascade = CascadeType.ALL,
-            orphanRemoval = true)
-    @JsonBackReference("barberAppointmentPreference")
-    private Set<Appointment> appointments;
-
     @OneToMany(targetEntity = Service.class, mappedBy = "barber", fetch = FetchType.EAGER, cascade = CascadeType.ALL,
             orphanRemoval = true)
     @JsonBackReference("barberServicePreference")
     private Set<Service> services;
+
+    @OneToMany(mappedBy = "barber")
+    private Set<Appointment> appointments = new HashSet<>();
 
     public Barber() {
     }
@@ -59,20 +58,6 @@ public class Barber extends PanacheEntityBase {
         this.state = state;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
-    }
-
-    public Barber(UUID id, UUID subjectId, String name, String lastName, String address, String phone, String email, String state, Long createdAt, Long updatedAt, Set<Appointment> appointments) {
-        this.id = id;
-        this.subjectId = subjectId;
-        this.name = name;
-        this.lastName = lastName;
-        this.address = address;
-        this.phone = phone;
-        this.email = email;
-        this.state = state;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
-        this.appointments = appointments;
     }
 
     /**
@@ -171,14 +156,6 @@ public class Barber extends PanacheEntityBase {
         this.updatedAt = updatedAt;
     }
 
-    public Set<Appointment> getAppointments() {
-        return appointments;
-    }
-
-    public void setAppointments(Set<Appointment> appointments) {
-        this.appointments = appointments;
-    }
-
     public Set<Service> getServices() {
         return services;
     }
@@ -187,19 +164,11 @@ public class Barber extends PanacheEntityBase {
         this.services = services;
     }
 
-    /**
-     * @param appointment
-     */
-    public void addAppointment(Appointment appointment) {
-        appointments.add(appointment);
-        appointment.setBarber(this);
+    public Set<Appointment> getAppointments() {
+        return appointments;
     }
 
-    /**
-     * @param appointment
-     */
-    public void removeAppointment(Appointment appointment) {
-        appointments.remove(appointment);
-        appointment.setCustomer(null);
+    public void setAppointments(Set<Appointment> appointments) {
+        this.appointments = appointments;
     }
 }

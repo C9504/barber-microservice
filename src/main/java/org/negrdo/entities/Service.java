@@ -5,6 +5,8 @@ import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import jakarta.persistence.*;
 
 import java.time.Instant;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 @Entity
@@ -18,13 +20,13 @@ public class Service extends PanacheEntityBase {
 
     @Column(name = "name", nullable = false, length = 36)
     private String name;
-    @Column(name = "description", nullable = false, length = 50)
+    @Column(name = "description", nullable = false, length = 200)
     private String description;
     @Column(name = "time", nullable = false, length = 50)
     private String time;
     @Column(name = "price", nullable = false, length = 100)
     private Double price;
-    @Column(name = "category", nullable = false, length = 15)
+    @Column(name = "category", nullable = false, length = 100)
     private String category;
     @Column(name = "image", nullable = false, unique = true, length = 100)
     private String image;
@@ -38,6 +40,14 @@ public class Service extends PanacheEntityBase {
     @ManyToOne(targetEntity = Barber.class, fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JsonBackReference("serviceBarberPreference")
     private Barber barber;
+
+    @ManyToMany
+    @JoinTable(
+            name = "service_appointment",
+            joinColumns = @JoinColumn(name = "appointment_id"),
+            inverseJoinColumns = @JoinColumn(name = "service_id")
+    )
+    private Set<Appointment> appointments = new HashSet<>();
 
     public Service() {
     }
@@ -154,5 +164,13 @@ public class Service extends PanacheEntityBase {
 
     public void setBarber(Barber barber) {
         this.barber = barber;
+    }
+
+    public Set<Appointment> getAppointments() {
+        return appointments;
+    }
+
+    public void setAppointments(Set<Appointment> appointments) {
+        this.appointments = appointments;
     }
 }

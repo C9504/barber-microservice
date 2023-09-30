@@ -1,10 +1,11 @@
 package org.negrdo.entities;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import jakarta.persistence.*;
 
 import java.time.Instant;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 @Entity
@@ -23,13 +24,14 @@ public class Appointment extends PanacheEntityBase {
     @Column(name = "updated_at", nullable = false)
     private Long updatedAt = Instant.now().toEpochMilli();
 
-    @ManyToOne(targetEntity = Customer.class, fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    //@JsonIgnore
-    @JsonBackReference("customerPreference")
+    @ManyToOne(fetch = FetchType.EAGER)
     private Customer customer;
-    @ManyToOne(targetEntity = Barber.class, fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JsonBackReference("barberPreference")
+
+    @ManyToOne(fetch = FetchType.EAGER)
     private Barber barber;
+
+    @ManyToMany(mappedBy = "appointments")
+    private Set<Service> services = new HashSet<>();
 
     public Appointment() {
     }
@@ -40,18 +42,6 @@ public class Appointment extends PanacheEntityBase {
         this.state = state;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Appointment)) return false;
-        return id != null && id.equals(((Appointment) o).id);
-    }
-
-    @Override
-    public int hashCode() {
-        return 31;
     }
 
     public UUID getId() {
@@ -108,5 +98,13 @@ public class Appointment extends PanacheEntityBase {
 
     public void setBarber(Barber barber) {
         this.barber = barber;
+    }
+
+    public Set<Service> getServices() {
+        return services;
+    }
+
+    public void setServices(Set<Service> services) {
+        this.services = services;
     }
 }

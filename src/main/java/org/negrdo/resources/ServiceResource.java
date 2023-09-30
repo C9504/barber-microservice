@@ -1,11 +1,14 @@
 package org.negrdo.resources;
 
 import io.quarkus.panache.common.Sort;
+import io.quarkus.security.Authenticated;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.negrdo.entities.Barber;
 import org.negrdo.entities.Service;
 import org.negrdo.repositories.ServiceRepository;
@@ -17,23 +20,27 @@ import java.util.UUID;
 public class ServiceResource {
 
     @Inject
+    JsonWebToken jsonWebToken;
+
+    @Inject
     ServiceRepository serviceRepository;
 
     @GET
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public List<Service> index() {
-        List<Service> services = serviceRepository.listAll(Sort.by("createdAt").ascending());
-        return services;
+        return serviceRepository.listAll(Sort.by("createdAt").ascending());
     }
 
     @POST
     @Transactional
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
+    @RolesAllowed({"barber"})
     public Service create(Service service) {
-        Barber barber = Barber.findById(service.getBarber().getId());
+        Barber barber = Barber.find("subjectId", UUID.fromString(jsonWebToken.getSubject())).firstResult();
         service.setId(UUID.randomUUID());
+        service.setState("ACTIVE");
         service.setBarber(barber);
         service.persistAndFlush();
         return service;

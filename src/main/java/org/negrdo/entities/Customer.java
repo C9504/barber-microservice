@@ -5,7 +5,9 @@ import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import jakarta.persistence.*;
 
 import java.time.Instant;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Entity
@@ -35,12 +37,11 @@ public class Customer extends PanacheEntityBase {
     @Column(name = "updated_at", nullable = false)
     private Long updatedAt = Instant.now().toEpochMilli();
 
-    @OneToMany(targetEntity = Appointment.class, mappedBy = "customer", fetch = FetchType.EAGER, cascade = CascadeType.ALL,
-            orphanRemoval = true)
-    @JsonBackReference("customerAppointmentPreference")
-    private List<Appointment> appointments;
+    @OneToMany(mappedBy = "customer")
+    private Set<Appointment> appointments = new HashSet<>();
 
     public Customer() {
+
     }
 
     public Customer(UUID id, UUID subjectId, String name, String lastName, String address, String phone, String email, String state, Long createdAt, Long updatedAt) {
@@ -54,22 +55,6 @@ public class Customer extends PanacheEntityBase {
         this.state = state;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
-    }
-
-    /**
-     * @param appointment
-     */
-    public void addAppointment(Appointment appointment) {
-        appointments.add(appointment);
-        appointment.setCustomer(this);
-    }
-
-    /**
-     * @param appointment
-     */
-    public void removeAppointment(Appointment appointment) {
-        appointments.remove(appointment);
-        appointment.setCustomer(null);
     }
 
     public UUID getId() {
@@ -153,11 +138,11 @@ public class Customer extends PanacheEntityBase {
     }
 
 
-    public List<Appointment> getAppointments() {
+    public Set<Appointment> getAppointments() {
         return appointments;
     }
 
-    public void setAppointments(List<Appointment> appointments) {
+    public void setAppointments(Set<Appointment> appointments) {
         this.appointments = appointments;
     }
 }
